@@ -22,7 +22,24 @@ public class Controller3D {
     private final Panel panel;
     private final Raster<Integer> raster;
 
-    private final List<Element> elements;
+    private int oldX;
+    private int oldY;
+
+    private boolean perspective = false;
+    private boolean shiftIsPressed;
+
+    private double height;
+    private double width;
+
+    private double xRot = 0;
+    private double yRot = 0;
+    private double zRot = 0;
+
+    private double scale = 1;
+
+    private double translZ;
+
+    private final List<Element> elementBuffer;
     private final List<Vertex> vb; // vertex buffer
     private final List<Integer> ib; // index buffer
 
@@ -76,39 +93,7 @@ public class Controller3D {
 ////        vb.add(new Vertex(new Point3D(1, 1, 1), Color.GREEN)); // 7 // vpravo
 ////        vb.add(new Vertex(new Point3D(1, 1, 1), Color.GREEN)); // 8 // vlevo
 //
-//        ib.add(0);
-//        ib.add(1);
-//        ib.add(2);
-//        // tyto 3 indexy tvoří jeden celý trojúhleník
-//
-//        ib.add(2);
-//        ib.add(4);
-//        ib.add(3);
-//        // tyto 3 indexy tvoří jeden celý trojúhleník
-//
-//        ib.add(5);
-//        ib.add(6);
-//        ib.add(7);
-//        ib.add(8);
-//        // tyto 4 indexy tvoří 2 celé úsečky
-//
-//
-//        // 2 trojúhelníky
-//        //  - každý má 3 vrcholy (vertexy)
-//        // 2 úsečky
-//        //  - kkaždá má 2 vrcholy (vertexy)
-//
-//        elements.add(new Element(TopologyType.TRIANGLE, 0, 6));
-//        // 0 -> nultý prvek v index bufferu
-//        // 6 -> použije se 6 indexů - 1 trojúhelník potřebuje 3 indexy, takže budou 2 trojúhelníky
-//
-//        elements.add(new Element(TopologyType.LINE, 6, 4));
-//        // 6 -> jako první vzít šestý prvek v index bufferu
-//        // 4 -> chci 2 úsečky a každá úsečka má 2 indexy
-//
-//        renderer.draw(elements, ib, vb);
-////        panel.repaint();
-//    }
+
 
 //    private void initObjects2() {
 //        vb.add(new Vertex(new Point3D(1, 1, 1), new Col(255, 0, 0))); // 0 // ten nejvíce vlevo
@@ -165,8 +150,98 @@ public class Controller3D {
     }
 
     private void initListeners(Panel panel) {
-        // TODO
         panel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                oldX = e.getX();
+                oldY = e.getY();
+            }
+        });
+
+        panel.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                camera = camera.addAzimuth((Math.PI*(e.getX()-oldX))/width);
+                camera = camera.addZenith((Math.PI*(e.getY()-oldY))/height);
+
+                oldX = e.getX();
+                oldY = e.getY();
+                display();
+            }
+        });
+
+        panel.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+                panel.requestFocus();
+                panel.requestFocusInWindow();
+
+                /*SET PROJECTION (TZO)*/
+                if(e.getKeyCode() == KeyEvent.VK_O)
+                    perspective = false;
+                if (e.getKeyCode() == KeyEvent.VK_P)
+                    perspective = true;
+
+                /*SELECTED SOLID (NEXT)
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT && selectedSolid < scene.getSolids().size() - 1) {
+                    scene.getSolids().get(selectedSolid).setColor(temColor);
+                    selectedSolid++;
+                    temColor = scene.getSolids().get(selectedSolid).getColor();
+                    scene.getSolids().get(selectedSolid).setColor(Color.YELLOW);
+                }
+
+                SELECTED SOLID (PREVIOUS)
+                if (e.getKeyCode() == KeyEvent.VK_LEFT && selectedSolid > 1) {
+                    scene.getSolids().get(selectedSolid).setColor(temColor);
+                    selectedSolid--;
+                    temColor = scene.getSolids().get(selectedSolid).getColor();
+                    scene.getSolids().get(selectedSolid).setColor(Color.YELLOW);
+                }*/
+
+                /*CAMERA*/
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_W -> camera = camera.forward(0.1);
+                    case KeyEvent.VK_A -> camera = camera.left(0.1);
+                    case KeyEvent.VK_S -> camera = camera.backward(0.1);
+                    case KeyEvent.VK_D -> camera = camera.right(0.1);
+                }
+
+                /*ROTATION*/
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_X -> xRot += 0.1;
+                    case KeyEvent.VK_Y -> yRot += 0.1;
+                    case KeyEvent.VK_C -> zRot += 0.1;
+                }
+
+                /*TRANSL*/
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_UP -> translZ += 0.1;
+                    case KeyEvent.VK_DOWN -> translZ -= 0.1;
+                }
+
+                /*SCALE*/
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_HOME -> scale += 0.1;
+                    case KeyEvent.VK_END -> scale -= 0.1;
+                }
+
+                if(e.isShiftDown()){
+                    shiftIsPressed = true;
+                    display();
+                }
+                shiftIsPressed = false;
+
+                display();
+                //cube.setModel(new Mat4Transl(2,0.25,0));        /*PO TRANSFORMACI SE PREMISTI NA PUVODNI MISTO*/
+                //crystal.setModel(new Mat4Transl(0.25,2,0));
+            }
+        });
+
+
+
+        // TODO
+        /*panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 System.out.println(e.getX());
@@ -188,7 +263,7 @@ public class Controller3D {
             public void keyPressed(KeyEvent e) {
                 System.out.println(e.getKeyCode() == KeyEvent.VK_H);
             }
-        });
+        });*/
 //        MouseAdapter drag = new MouseAdapter() {
 //            @Override
 //            public void mouseDragged(MouseEvent e) {
@@ -200,7 +275,7 @@ public class Controller3D {
 //        panel.removeMouseMotionListener(drag);
     }
 
-    private void display() {
+    private synchronized void display() {
         renderer.clear();
 
         renderer.setModel(model);
