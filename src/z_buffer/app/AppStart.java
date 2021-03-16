@@ -1,7 +1,7 @@
-package Z_buffer.app;
+package z_buffer.app;
 
-import Z_buffer.controller.Controller3D;
-import Z_buffer.view.Window;
+import z_buffer.controller.Controller3D;
+import z_buffer.view.Window;
 
 import javax.swing.*;
 

@@ -1,8 +1,8 @@
-package Z_buffer.renderer;
+package z_buffer.renderer;
 
 import transforms.Mat4;
-import Z_buffer.model.Element;
-import Z_buffer.model.Vertex;
+import z_buffer.model.Element;
+import z_buffer.model.Vertex;
 
 import java.util.List;
 

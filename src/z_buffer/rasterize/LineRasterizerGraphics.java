@@ -1,4 +1,4 @@
-package Z_buffer.rasterize;
+package z_buffer.rasterize;
 
 import java.awt.*;
 

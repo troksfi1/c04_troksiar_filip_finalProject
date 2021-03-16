@@ -1,4 +1,4 @@
-package Z_buffer.model;
+package z_buffer.model;
 
 public enum TopologyType {
     POINT, LINE, TRIANGLE
