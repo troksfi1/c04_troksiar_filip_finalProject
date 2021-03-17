@@ -195,6 +195,7 @@ public class RendererZBuffer implements GPURenderer {
         long start = (long) Math.max(Math.ceil(a.getY()), 0);
         long end = (long) Math.min(b.getY(), raster.getHeight() - 1);
         for (long y = start; y <= end; y++) {
+
             double t1 = (y - a.getY()) / (b.getY() - a.getY());
             Vertex ab = a.mul(1 - t1).add(b.mul(t1));
 
@@ -206,6 +207,53 @@ public class RendererZBuffer implements GPURenderer {
 
         // z B do C
         // TODO
+        long start1 = (long) Math.max(Math.ceil(b.getY()), 0);
+        long end1 = (long) Math.min(c.getY(), raster.getHeight() - 1);
+        for (long y = start1; y <= end1; y++) {
+
+            double t1 = (y - b.getY()) / (c.getY() - b.getY());
+            Vertex bc = b.mul(1 - t1).add(c.mul(t1));
+
+            double t2 = (y - a.getY()) / (c.getY() - a.getY());
+            Vertex ac = a.mul(1 - t2).add(c.mul(t2));
+
+            fillLine(y, bc, ac);
+        }
+    }
+
+    private void drawLine(Vertex a, Vertex b) {
+
+        // 1. dehomogenizace
+        Optional<Vertex> o1 = a.dehomog();
+        Optional<Vertex> o2 = b.dehomog();
+
+        // zahodit trojúhleník, pokud některý vrchol má w==0
+        if (o1.isEmpty() || o2.isEmpty()) return;
+
+        a = o1.get();
+        b = o2.get();
+
+        // 2. transformace do okna
+        a = transformToWindow(a);
+        b = transformToWindow(b);
+
+        if (a.getY() > b.getY()) {
+            Vertex temp = a;
+            a = b;
+            b = temp;
+        }
+
+        long start = (long) Math.max(Math.ceil(a.getY()), 0);
+        long end = (long) Math.min(b.getY(), raster.getHeight() - 1);
+
+        fillLine(5,a,b);
+        /*for (long y = start; y <= end; y++) {
+
+            double t1 = (y - a.getY()) / (b.getY() - a.getY());
+            Vertex ab = a.mul(1 - t1).add(b.mul(t1));
+
+            drawPixel((int) Math.round(ab.getX()),(int)Math.round(ab.getY()),Math.round(ab.getZ()), ab.getColor());
+        }*/
     }
 
     private void fillLine(long y, Vertex a, Vertex b) {
@@ -246,21 +294,25 @@ public class RendererZBuffer implements GPURenderer {
     @Override
     public void clear() {
         // TODO
+        raster.clear();
+        depthBuffer.clear();
     }
 
     @Override
     public void setModel(Mat4 model) {
         // TODO
+        this.model = model;
     }
 
     @Override
     public void setView(Mat4 view) {
         // TODO
+        this.view = view;
     }
 
     @Override
     public void setProjection(Mat4 projection) {
         // TODO
+        this.projection = projection;
     }
-
 }

@@ -14,10 +14,6 @@ public class Vertex {
     public Vertex(Point3D point, Col color) {
         this.point = point;
         this.color = color;
-//        x = point.getX();
-//        y = point.getY();
-//        z = point.getZ();
-//        w = point.getW();
     }
 
     public Vertex mul(double t) {

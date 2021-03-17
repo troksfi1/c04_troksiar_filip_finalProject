@@ -74,8 +74,32 @@ public class Controller3D {
         ib.add(4);
         ib.add(5);
 
-        elements.add(new Element(TopologyType.TRIANGLE, 0, 6));
-        renderer.draw(elements, ib, vb);
+        /*AXES*/
+        vb.add(new Vertex(new Point3D(0, 0, 0), new Col(255, 0, 0))); // 4 // RED
+        vb.add(new Vertex(new Point3D(1, 0, 0), new Col(255, 0, 0))); // 4 // nejvíce nahoře
+        ib.add(6);
+        ib.add(7);
+
+        vb.add(new Vertex(new Point3D(0, 0, 0), new Col(0, 255, 0))); // 4 // GREEN
+        vb.add(new Vertex(new Point3D(0, 1, 0), new Col(0, 255, 0))); // 4 // nejvíce nahoře
+        ib.add(8);
+        ib.add(9);
+
+        vb.add(new Vertex(new Point3D(0, 0, 0), new Col(0, 0, 255))); // 4 // BLUE
+        vb.add(new Vertex(new Point3D(0, 0, 1), new Col(0, 0, 255))); // 4 // nejvíce nahoře
+        ib.add(10);
+        ib.add(11);
+
+        elementBuffer.add(new Element(TopologyType.TRIANGLE, 0, 6));
+        elementBuffer.add(new Element(TopologyType.LINE, 6,2));
+        elementBuffer.add(new Element(TopologyType.LINE, 8,2));
+        elementBuffer.add(new Element(TopologyType.LINE, 10,2));
+        display();
+
+
+        height = panel.getHeight();
+        width = panel.getWidth();
+
         panel.repaint();
     }
 
@@ -238,39 +262,6 @@ public class Controller3D {
                 //crystal.setModel(new Mat4Transl(0.25,2,0));
             }
         });
-
-
-
-        // TODO
-        /*panel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                System.out.println(e.getX());
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                System.out.println(e.isControlDown());
-            }
-        });
-        panel.addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                System.out.println("drag");
-            }
-        });
-        panel.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                System.out.println(e.getKeyCode() == KeyEvent.VK_H);
-            }
-        });*/
-//        MouseAdapter drag = new MouseAdapter() {
-//            @Override
-//            public void mouseDragged(MouseEvent e) {
-//                System.out.println("drag");
-//            }
-//        };
 //
 //        panel.addMouseMotionListener(drag);
 //        panel.removeMouseMotionListener(drag);
