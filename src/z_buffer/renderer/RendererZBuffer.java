@@ -1,11 +1,11 @@
-package Z_buffer.renderer;
+package z_buffer.renderer;
 
 import transforms.*;
-import Z_buffer.model.Element;
-import Z_buffer.model.TopologyType;
-import Z_buffer.model.Vertex;
-import Z_buffer.rasterize.DepthBuffer;
-import Z_buffer.rasterize.Raster;
+import z_buffer.model.Element;
+import z_buffer.model.TopologyType;
+import z_buffer.model.Vertex;
+import z_buffer.rasterize.DepthBuffer;
+import z_buffer.rasterize.Raster;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,9 +21,9 @@ public class RendererZBuffer implements GPURenderer {
         this.raster = raster;
         depthBuffer = new DepthBuffer(raster.getWidth(), raster.getHeight());
 
-        model = new Mat4Identity();
+        /*model = new Mat4Identity();
         view = new Mat4Identity();
-        projection = new Mat4Identity();
+        projection = new Mat4Identity();*/
     }
 
     @Override
@@ -32,6 +32,7 @@ public class RendererZBuffer implements GPURenderer {
             final TopologyType type = element.getTopologyType();
             final int start = element.getStart();
             final int count = element.getCount();
+
             if (type == TopologyType.TRIANGLE) {
                 for (int i = start; i < start + count; i += 3) {
                     final Integer i1 = ib.get(i);
@@ -44,39 +45,50 @@ public class RendererZBuffer implements GPURenderer {
                 }
 
             } else if (type == TopologyType.LINE) {
-                // TODO
+                for (int i = start; i < start + count; i += 2) {
+                    final Integer i1 = ib.get(i);
+                    final Integer i2 = ib.get(i + 1);
+                    final Vertex v1 = vb.get(i1);
+                    final Vertex v2 = vb.get(i2);
+                    prepareLine(v1,v2);
+                    //prepareTriangle(v1, v2);
+                }
+            } else if (type == TopologyType.POINT) {
+                for (int i = start; i < start + count; i++) {
+                    final Integer i1 = ib.get(i);
+                    final Vertex v1 = vb.get(i1);
+                    drawPixel((int) Math.round(v1.getX()),(int) Math.round(v1.getY()),v1.getZ(), v1.getColor());   //TODO delete cast
+                }
             }
-//            switch (type) {
-//                case TRIANGLE:
-//                    System.out.println("triangle");
-//                    break;
-//                case LINE:
-//                    System.out.println("line");
-//                    break;
-//                case POINT:
-//                    System.out.println("point");
-//                    break;
-//            //default UnsupportedOperationException
-//            }
-//
-//            switch (type) {
-//                case TRIANGLE -> System.out.println("triangle");
-//                case LINE -> System.out.println("line");
-//                case POINT -> System.out.println("point");
-//            }
+            /*switch (type) {
+                case TRIANGLE -> System.out.println("triangle");
+                case LINE -> System.out.println("line");
+                case POINT -> System.out.println("point");
+            }*/
         }
     }
 
+    private void prepareLine(Vertex v1, Vertex v2) {
+        // 1. transformace vrcholů
+        Vertex a = new Vertex(v1.getPoint().mul(model).mul(view).mul(projection), v1.getColor());
+        Vertex b = new Vertex(v2.getPoint().mul(model).mul(view).mul(projection), v2.getColor());
+
+        if (a.getZ() < b.getZ()) {
+            Vertex temp = a;
+            a = b;
+            b = temp;
+        }
+
+        drawLine(a,b);
+
+    }
+
     private void prepareTriangle(Vertex v1, Vertex v2, Vertex v3) {
-//        LineRasterizerGraphics lineRasterizer = new LineRasterizerGraphics(raster);
-//        lineRasterizer.rasterize((int)v1.x, (int)v1.y, (int)v2.x, (int)v2.y, v1.getColor());
-//        lineRasterizer.rasterize((int)v1.x, (int)v1.y, (int)v3.x, (int)v3.y, v1.getColor());
-//        lineRasterizer.rasterize((int)v2.x, (int)v2.y, (int)v3.x, (int)v3.y, v2.getColor());
 
         // 1. transformace vrcholů
         Vertex a = new Vertex(v1.getPoint().mul(model).mul(view).mul(projection), v1.getColor());
-        Vertex b = new Vertex(v2.getPoint(), v2.getColor());
-        Vertex c = new Vertex(v3.getPoint(), v3.getColor());
+        Vertex b = new Vertex(v2.getPoint().mul(model).mul(view).mul(projection), v2.getColor());
+        Vertex c = new Vertex(v3.getPoint().mul(model).mul(view).mul(projection), v3.getColor());
 
         // 2. ořezání
         // TODO

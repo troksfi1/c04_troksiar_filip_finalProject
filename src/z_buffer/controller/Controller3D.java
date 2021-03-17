@@ -1,18 +1,15 @@
-package Z_buffer.controller;
+package z_buffer.controller;
 
 import transforms.*;
-import Z_buffer.model.Element;
-import Z_buffer.model.TopologyType;
-import Z_buffer.model.Vertex;
-import Z_buffer.rasterize.Raster;
-import Z_buffer.renderer.GPURenderer;
-import Z_buffer.renderer.RendererZBuffer;
-import Z_buffer.view.Panel;
+import z_buffer.model.Element;
+import z_buffer.model.TopologyType;
+import z_buffer.model.Vertex;
+import z_buffer.rasterize.Raster;
+import z_buffer.renderer.GPURenderer;
+import z_buffer.renderer.RendererZBuffer;
+import z_buffer.view.Panel;
 
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +48,7 @@ public class Controller3D {
         this.raster = panel.getRaster();
         this.renderer = new RendererZBuffer(raster);
 
-        elements = new ArrayList<>();
+        elementBuffer = new ArrayList<>();
         vb = new ArrayList<>();
         ib = new ArrayList<>();
 
@@ -64,6 +61,7 @@ public class Controller3D {
         vb.add(new Vertex(new Point3D(.5, .0, .9), new Col(255, 0, 0))); // 0 // nejvíce vlevo
         vb.add(new Vertex(new Point3D(.7, .7, .9), new Col(255, 120, 0))); // 1 // nejvíce dole
         vb.add(new Vertex(new Point3D(.0, .5, .3), new Col(255, 255, 0))); // 2 // společný
+        /*Druhy troj zel*/
         vb.add(new Vertex(new Point3D(.3, .8, .5), new Col(0, 255, 0))); // 3 // nejvíce vpravo
         vb.add(new Vertex(new Point3D(.1, .2, 1), new Col(0, 255, 120))); // 4 // nejvíce nahoře
         vb.add(new Vertex(new Point3D(.7, .3, .2), new Col(0, 255, 255))); // 4 // nejvíce nahoře
@@ -71,6 +69,7 @@ public class Controller3D {
         ib.add(0);
         ib.add(2);
         ib.add(1);
+        /*druhy troj*/
         ib.add(3);
         ib.add(4);
         ib.add(5);
@@ -155,6 +154,8 @@ public class Controller3D {
             public void mousePressed(MouseEvent e) {
                 oldX = e.getX();
                 oldY = e.getY();
+
+                display();
             }
         });
 
@@ -282,7 +283,8 @@ public class Controller3D {
         renderer.setView(camera.getViewMatrix());
         renderer.setProjection(projection);
 
-        // musíme nakonec říci, že panel má nový obsah zobrazit
+        renderer.draw(elementBuffer, ib, vb);
+
         panel.repaint();
     }
 
