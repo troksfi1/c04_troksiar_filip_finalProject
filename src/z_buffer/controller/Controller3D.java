@@ -1,8 +1,9 @@
 package z_buffer.controller;
 
 import transforms.*;
+import z_buffer.elements.Arrow;
 import z_buffer.elements.Crystal;
-import z_buffer.elements.Line;
+import z_buffer.elements.Axis;
 import z_buffer.elements.Triangle;
 import z_buffer.model.Element;
 import z_buffer.model.Scene;
@@ -17,15 +18,14 @@ public class Controller3D {
 
     private final GPURenderer renderer;
     private final Panel panel;
-    private final Raster<Integer> raster;
 
     private int oldX;
     private int oldY;
 
     private boolean shiftIsPressed;
 
-    private double height;
-    private double width;
+    private final double height;
+    private final double width;
 
     private Mat4 temModel;
 
@@ -41,12 +41,6 @@ public class Controller3D {
 
     private Scene scene;
 
-    /*private final List<Element> elementBuffer;
-    private final List<Vertex> vb; // vertex buffer
-    private final List<Integer> ib; // index buffer*/
-
-    /**SOLIDS**/
-    private Line line;
     private Triangle triangle;
     private Crystal crystal;
 
@@ -55,7 +49,7 @@ public class Controller3D {
 
     public Controller3D(Panel panel) {
         this.panel = panel;
-        this.raster = panel.getRaster();
+        Raster<Integer> raster = panel.getRaster();
         this.renderer = new RendererZBuffer(raster);
 
         height = panel.getHeight();
@@ -69,44 +63,32 @@ public class Controller3D {
     private void initObjects() {
         scene = new Scene();
 
+        /*SOLIDS*/
+        Axis axis = new Axis();
         triangle = new Triangle();
+        crystal = new Crystal();
+        Arrow arrow = new Arrow();
 
-        //crystal = new Crystal();
 
+        scene.addElement(axis);
         scene.addElement(triangle);
-        scene.addElement(new Line());
-        scene.addElement(new Crystal());
+        scene.addElement(crystal);
+        scene.addElement(arrow);
 
-        triangle.setModel(new Mat4Transl(2,1,0));
-
-        scene.getElements().get(1).setModel(new Mat4Transl(2,2,0));
-        scene.getElements().get(2).setModel(new Mat4Transl(2,2,0));
+        axis.setModel(new Mat4Identity());
+        triangle.setModel(new Mat4Transl(1,.25,0));
+        crystal.setModel(new Mat4Transl(.25,1,0));
 
         temModel = scene.getElements().get(selectedElement).getModel();
 
-
-        /*scene.addElement(new Element(TopologyType.TRIANGLE, 0, 6));
-        scene.addElement(new Element(TopologyType.LINE, 6,2));
-        scene.addElement(new Element(TopologyType.LINE, 8,2));
-        scene.addElement(new Element(TopologyType.LINE, 10,2));*/
-
-        //scene.addElement(new Element(TopologyType.LINE, 12,2));
-        //scene.addElement(new Element(TopologyType.LINE, 14,2));
         display();
         panel.repaint();
     }
 
     private void initMatrices() {
         model = new Mat4Identity();
-
         camera = new Camera().addAzimuth(-2.5).addZenith(-0.15).withPosition(new Vec3D(5,5,2));
-        /*var e = new Vec3D(0, -5, 2);
-        camera = new Camera()
-                .withPosition(e)
-                .withAzimuth(Math.toRadians(90))
-                .withZenith(Math.toRadians(-20));*/
-
-        isPerspective(true);
+        isPerspective(false);
     }
 
     private void initListeners(Panel panel) {
@@ -115,16 +97,14 @@ public class Controller3D {
             public void mousePressed(MouseEvent e) {
                 oldX = e.getX();
                 oldY = e.getY();
-
-                display();
             }
         });
 
         panel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                camera = camera.addAzimuth((Math.PI*(e.getX()-oldX))/width);
-                camera = camera.addZenith((Math.PI*(e.getY()-oldY))/height);
+                camera = camera.addAzimuth((Math.PI/2*(e.getX()-oldX))/width);
+                camera = camera.addZenith((Math.PI/2*(e.getY()-oldY))/height);
 
                 oldX = e.getX();
                 oldY = e.getY();
@@ -139,18 +119,6 @@ public class Controller3D {
                 panel.requestFocus();
                 panel.requestFocusInWindow();
 
-                /*SET PROJECTION (TZO)*//*
-                if(e.getKeyCode() == KeyEvent.VK_P) {             //TODO DUBLI
-                    projection = new Mat4OrthoRH(
-                            Math.PI / 3,
-                            raster.getHeight() / (float) raster.getWidth(),
-                            0.5,
-                            50
-                    );
-                }
-                else if (e.getKeyCode() == KeyEvent.VK_O) {
-                    projection = new Mat4OrthoRH(8,8,0.1,10);
-                }*/
 
                 /*SELECTED SOLID (NEXT)*/
                 if (e.getKeyCode() == KeyEvent.VK_RIGHT && selectedElement < scene.getElements().size() - 1) {
@@ -178,30 +146,29 @@ public class Controller3D {
                     case KeyEvent.VK_S -> camera = camera.backward(0.1);
                     case KeyEvent.VK_D -> camera = camera.right(0.1);
 
-                    case KeyEvent.VK_X -> xRot += 0.1;
-                    case KeyEvent.VK_Y -> yRot += 0.1;
-                    case KeyEvent.VK_C -> zRot += 0.1;
-
-                    case KeyEvent.VK_UP -> translZ += 0.1;
-                    case KeyEvent.VK_DOWN -> translZ -= 0.1;
-
-                    case KeyEvent.VK_HOME -> scale += 0.1;
-                    case KeyEvent.VK_END -> scale -= 0.1;
+                    case KeyEvent.VK_L -> renderer.wireModel(true);
+                    case KeyEvent.VK_K -> renderer.wireModel(false);
                 }
 
                 /*ROTATION*/
                 switch (e.getKeyCode()) {
+                    case KeyEvent.VK_X -> xRot += 0.1;          //UKALADAT DO PROMENNE JE KRAVINA
+                    case KeyEvent.VK_Y -> yRot += 0.1;
+                    case KeyEvent.VK_C -> zRot += 0.1;
 
                 }
 
                 /*TRANSL*/
                 switch (e.getKeyCode()) {
+                    case KeyEvent.VK_UP -> translZ += 0.1;
+                    case KeyEvent.VK_DOWN -> translZ -= 0.1;
 
                 }
 
                 /*SCALE*/
                 switch (e.getKeyCode()) {
-
+                    case KeyEvent.VK_HOME -> scale += 0.1;
+                    case KeyEvent.VK_END -> scale -= 0.1;
                 }
 
                 if(e.isShiftDown()){
@@ -211,8 +178,8 @@ public class Controller3D {
                 shiftIsPressed = false;
 
                 display();
-                //cube.setModel(new Mat4Transl(2,0.25,0));        /*PO TRANSFORMACI SE PREMISTI NA PUVODNI MISTO*/
-                //crystal.setModel(new Mat4Transl(0.25,2,0));
+                triangle.setModel(new Mat4Transl(1,0.25,0));        /*PO TRANSFORMACI SE PREMISTI NA PUVODNI MISTO*/
+                crystal.setModel(new Mat4Transl(0.25,1,0));
             }
         });
     }
@@ -226,28 +193,30 @@ public class Controller3D {
                     50
             );
         else
-            projection = new Mat4OrthoRH(width/height,height/width,0.5,10);
+            projection = new Mat4OrthoRH((width/height)*8,(height/width)*8,0.5,100);
     }
 
     private synchronized void display() {
         renderer.clear();
 
-        renderer.setModel(model);
-        renderer.setView(camera.getViewMatrix());
-        renderer.setProjection(projection);
+        if(shiftIsPressed) {   //ALL ELEMENTS ARE SELECTED
+            for (int i = 1; i < scene.getElements().size();i++) {
+                Mat4 model2 = scene.getElements().get(i).getModel();
 
-        if(shiftIsPressed) {
-            for (int i = 1; i<scene.getElements().size();i++) {
                 scene.getElements().get(i).setModel(new Mat4RotXYZ(xRot*Math.PI/3, yRot*Math.PI/4, zRot*Math.PI/5)
                         .mul(new Mat4Transl(2,2,translZ))
                         .mul(new Mat4Scale(scale, scale, scale)));
+                scene.getElements().get(i).setModel(model2);
             }
-        } else if(selectedElement != 0) {
+        } else if(selectedElement != 0) {    //ONE ELEMENT IS SELECTED
             scene.getElements().get(selectedElement).setModel(new Mat4RotXYZ(xRot*Math.PI/3, yRot*Math.PI/4, zRot*Math.PI/5)
                     .mul(new Mat4Transl(2,2,translZ))
                     .mul(new Mat4Scale(scale, scale, scale)));
         }
 
+        renderer.setModel(model);                   //MODEL
+        renderer.setView(camera.getViewMatrix());   //CAMERA
+        renderer.setProjection(projection);         //TZO
 
         renderer.draw(scene.getElements(), Element.getIb(), Element.getVb());
 
