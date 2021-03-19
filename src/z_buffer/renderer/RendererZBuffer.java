@@ -21,9 +21,9 @@ public class RendererZBuffer implements GPURenderer {
         this.raster = raster;
         depthBuffer = new DepthBuffer(raster.getWidth(), raster.getHeight());
 
-        /*model = new Mat4Identity();
+        model = new Mat4Identity();
         view = new Mat4Identity();
-        projection = new Mat4Identity();*/
+        projection = new Mat4Identity();
     }
 
     @Override
@@ -93,6 +93,25 @@ public class RendererZBuffer implements GPURenderer {
         // 2. ořezání
         // TODO
         // slide 92-93
+
+        double aX = a.getX();           //TODO make vertex public
+        double aY = a.getY();
+        double aZ = a.getZ();
+        double aW = a.getW();
+
+        double bX = b.getX();
+        double bY = b.getY();
+        double bZ = b.getZ();
+        double bW = b.getW();
+
+        double cX = c.getX();
+        double cY = c.getY();
+        double cZ = c.getZ();
+        double cW = c.getW();
+
+        if((aX > aW && bX >bW && cX > cW )|| (aX < -aW && bX<-bW&& cX<-cW)||
+                (aY > aW && bY >bW && cX > cW )|| (aY < -aW && bY < -bW&& cY<-cW)||
+                (aZ > aW && bZ >bW && cZ > cW )|| (aZ < 0 && bZ < 0 && cZ < 0)) return;          //TODO delete az < 0
         // ořezat trojúhelníky, které jsou CELÉ mimo zobrazovací objem
 
         // 3. seřazení vrcholů podle Z (a.z > b.z > c.z)

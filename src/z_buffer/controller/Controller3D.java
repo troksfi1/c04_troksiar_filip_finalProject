@@ -1,20 +1,17 @@
 package z_buffer.controller;
 
 import transforms.*;
+import z_buffer.elements.Crystal;
 import z_buffer.elements.Line;
 import z_buffer.elements.Triangle;
 import z_buffer.model.Element;
 import z_buffer.model.Scene;
-import z_buffer.model.TopologyType;
-import z_buffer.model.Vertex;
 import z_buffer.rasterize.Raster;
 import z_buffer.renderer.GPURenderer;
 import z_buffer.renderer.RendererZBuffer;
 import z_buffer.view.Panel;
 
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Controller3D {
 
@@ -30,11 +27,15 @@ public class Controller3D {
     private double height;
     private double width;
 
+    private Mat4 temModel;
+
     private double xRot = 0;
     private double yRot = 0;
     private double zRot = 0;
 
     private double scale = 1;
+
+    private int selectedElement = 0;
 
     private double translZ;
 
@@ -47,6 +48,7 @@ public class Controller3D {
     /**SOLIDS**/
     private Line line;
     private Triangle triangle;
+    private Crystal crystal;
 
     private Mat4 model, projection;
     private Camera camera;
@@ -67,8 +69,20 @@ public class Controller3D {
     private void initObjects() {
         scene = new Scene();
 
-        scene.addElement(new Triangle());
+        triangle = new Triangle();
+
+        //crystal = new Crystal();
+
+        scene.addElement(triangle);
         scene.addElement(new Line());
+        scene.addElement(new Crystal());
+
+        triangle.setModel(new Mat4Transl(2,1,0));
+
+        scene.getElements().get(1).setModel(new Mat4Transl(2,2,0));
+        scene.getElements().get(2).setModel(new Mat4Transl(2,2,0));
+
+        temModel = scene.getElements().get(selectedElement).getModel();
 
 
         /*scene.addElement(new Element(TopologyType.TRIANGLE, 0, 6));
@@ -109,8 +123,8 @@ public class Controller3D {
         panel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                camera = camera.addAzimuth((Math.PI/4*(e.getX()-oldX))/width);
-                camera = camera.addZenith((Math.PI/4*(e.getY()-oldY))/height);
+                camera = camera.addAzimuth((Math.PI*(e.getX()-oldX))/width);
+                camera = camera.addZenith((Math.PI*(e.getY()-oldY))/height);
 
                 oldX = e.getX();
                 oldY = e.getY();
@@ -138,22 +152,21 @@ public class Controller3D {
                     projection = new Mat4OrthoRH(8,8,0.1,10);
                 }*/
 
-
-                /*SELECTED SOLID (NEXT)
-                if (e.getKeyCode() == KeyEvent.VK_RIGHT && selectedSolid < scene.getSolids().size() - 1) {
-                    scene.getSolids().get(selectedSolid).setColor(temColor);
-                    selectedSolid++;
-                    temColor = scene.getSolids().get(selectedSolid).getColor();
-                    scene.getSolids().get(selectedSolid).setColor(Color.YELLOW);
+                /*SELECTED SOLID (NEXT)*/
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT && selectedElement < scene.getElements().size() - 1) {
+                    scene.getElements().get(selectedElement).setModel(temModel);
+                    selectedElement++;
+                    temModel = scene.getElements().get(selectedElement).getModel();
+                    //scene.getElements().get(selectedElement).getModel().mul(new Mat4Scale(2,2,2));
                 }
 
-                SELECTED SOLID (PREVIOUS)
-                if (e.getKeyCode() == KeyEvent.VK_LEFT && selectedSolid > 1) {
-                    scene.getSolids().get(selectedSolid).setColor(temColor);
-                    selectedSolid--;
-                    temColor = scene.getSolids().get(selectedSolid).getColor();
-                    scene.getSolids().get(selectedSolid).setColor(Color.YELLOW);
-                }*/
+                /*SELECTED SOLID (PREVIOUS)*/
+                if (e.getKeyCode() == KeyEvent.VK_LEFT && selectedElement > 1) {
+                    scene.getElements().get(selectedElement).setModel(temModel);
+                    selectedElement--;
+                    temModel = scene.getElements().get(selectedElement).getModel();
+                    //scene.getElements().get(selectedElement).getModel().mul(new Mat4Scale(2,2,2));
+                }
 
                 /*CAMERA*/
                 switch (e.getKeyCode()) {
@@ -193,6 +206,7 @@ public class Controller3D {
 
                 if(e.isShiftDown()){
                     shiftIsPressed = true;
+                    display();
                 }
                 shiftIsPressed = false;
 
@@ -222,7 +236,17 @@ public class Controller3D {
         renderer.setView(camera.getViewMatrix());
         renderer.setProjection(projection);
 
-        //renderer.draw(elementBuffer, ib, vb);
+        if(shiftIsPressed) {
+            for (int i = 1; i<scene.getElements().size();i++) {
+                scene.getElements().get(i).setModel(new Mat4RotXYZ(xRot*Math.PI/3, yRot*Math.PI/4, zRot*Math.PI/5)
+                        .mul(new Mat4Transl(2,2,translZ))
+                        .mul(new Mat4Scale(scale, scale, scale)));
+            }
+        } else if(selectedElement != 0) {
+            scene.getElements().get(selectedElement).setModel(new Mat4RotXYZ(xRot*Math.PI/3, yRot*Math.PI/4, zRot*Math.PI/5)
+                    .mul(new Mat4Transl(2,2,translZ))
+                    .mul(new Mat4Scale(scale, scale, scale)));
+        }
 
 
         renderer.draw(scene.getElements(), Element.getIb(), Element.getVb());
