@@ -1,8 +1,8 @@
-package z_buffer.renderer;
+package final_project.renderer;
 
 import transforms.Mat4;
-import z_buffer.model.Element;
-import z_buffer.model.Vertex;
+import final_project.model.Element;
+import final_project.model.Vertex;
 
 import java.util.List;
 
@@ -17,5 +17,7 @@ public interface GPURenderer {
     void setView(Mat4 view);
 
     void setProjection(Mat4 projection);
+
+    void wireModel(Boolean wireModelSelected);
 
 }

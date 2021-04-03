@@ -1,4 +1,4 @@
-package z_buffer.rasterize;
+package final_project.rasterize;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

@@ -1,16 +1,16 @@
-package z_buffer.controller;
+package final_project.controller;
 
 import transforms.*;
-import z_buffer.elements.Arrow;
-import z_buffer.elements.Crystal;
-import z_buffer.elements.Axis;
-import z_buffer.elements.Triangle;
-import z_buffer.model.Element;
-import z_buffer.model.Scene;
-import z_buffer.rasterize.Raster;
-import z_buffer.renderer.GPURenderer;
-import z_buffer.renderer.RendererZBuffer;
-import z_buffer.view.Panel;
+import final_project.elements.Arrow;
+import final_project.elements.Crystal;
+import final_project.elements.Axis;
+import final_project.elements.Triangle;
+import final_project.model.Element;
+import final_project.model.Scene;
+import final_project.rasterize.Raster;
+import final_project.renderer.GPURenderer;
+import final_project.renderer.RendererZBuffer;
+import final_project.view.Panel;
 
 import java.awt.event.*;
 

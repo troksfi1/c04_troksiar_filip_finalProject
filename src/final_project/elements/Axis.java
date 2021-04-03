@@ -1,10 +1,10 @@
-package z_buffer.elements;
+package final_project.elements;
 
 import transforms.Col;
 import transforms.Point3D;
-import z_buffer.model.Element;
-import z_buffer.model.TopologyType;
-import z_buffer.model.Vertex;
+import final_project.model.Element;
+import final_project.model.TopologyType;
+import final_project.model.Vertex;
 
 public class Axis extends Element {
 

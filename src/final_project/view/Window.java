@@ -1,4 +1,4 @@
-package z_buffer.view;
+package final_project.view;
 
 import javax.swing.*;
 import java.awt.*;

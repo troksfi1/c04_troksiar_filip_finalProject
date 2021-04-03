@@ -1,4 +1,4 @@
-package z_buffer.model;
+package final_project.model;
 
 import transforms.Col;
 import transforms.Point3D;
@@ -9,7 +9,7 @@ public class Vertex {
 
     private final Point3D point;
     private final Col color;
-//    public final double x, y, z, w;
+    public double x, y, z, w;
 
     public Vertex(Point3D point, Col color) {
         this.point = point;
@@ -25,13 +25,6 @@ public class Vertex {
     }
 
     public Optional<Vertex> dehomog() {
-//        Optional<Vec3D> dehomog = point.dehomog();
-//        if (dehomog.isPresent()) {
-//            Vertex newVertex = new Vertex(new Point3D(dehomog.get()), color);
-//            return Optional.of(newVertex);
-//        } else {
-//            return Optional.empty();
-//        }
         return point.dehomog().map(vec3D -> new Vertex(new Point3D(vec3D), color));
     }
 
@@ -53,10 +46,6 @@ public class Vertex {
 
     public double getZ() {
         return point.getZ();
-    }
-
-    public double getW() {
-        return point.getW();
     }
 
 }

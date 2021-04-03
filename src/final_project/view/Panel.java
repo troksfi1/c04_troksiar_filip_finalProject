@@ -1,7 +1,7 @@
-package z_buffer.view;
+package final_project.view;
 
-import z_buffer.rasterize.Raster;
-import z_buffer.rasterize.RasterBufferedImage;
+import final_project.rasterize.Raster;
+import final_project.rasterize.RasterBufferedImage;
 
 import javax.swing.*;
 import java.awt.*;
